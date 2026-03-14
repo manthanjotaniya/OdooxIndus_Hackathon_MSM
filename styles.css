@@ -1,0 +1,32 @@
+:root{--background:#0b0f12;--foreground:#e6eef8;--card:#0f1216;--border:#17202a;--primary:#3b82f6;--accent:#10b981;--destructive:#ef4444;--radius:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:DM Sans,system-ui,Arial;background:var(--background);color:var(--foreground);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.auth-container{width:360px;background:var(--card);border:1px solid var(--border);padding:2rem;border-radius:10px}
+.auth-container h1{margin-bottom:1rem;font-size:1.5rem}
+.auth-container label{display:block;margin-top:0.75rem;font-size:0.9rem;color:#98a1b3}
+.auth-container input{width:100%;padding:0.6rem;margin-top:0.25rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--foreground)}
+.actions{display:flex;gap:0.5rem;align-items:center;margin-top:1rem}
+.btn{padding:0.5rem 0.9rem;border-radius:6px;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;border:none;cursor:pointer}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--foreground);padding:0.45rem 0.8rem}
+.mono{font-family:DM Mono,monospace;font-size:0.9rem}
+#loginMessage,#signupMessage,#otpMessage{margin-top:1rem;color:#f0f6ff}
+
+/* Inline helpers & errors */
+.helper{font-size:0.85rem;color:#98a1b3;margin-top:0.5rem}
+.error{color:var(--destructive)}
+
+/* Show-password toggle */
+.show-toggle{margin-left:auto;background:transparent;border:none;color:var(--primary);cursor:pointer;font-size:0.85rem}
+
+/* Small spinner */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.15);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* OTP area */
+.otp-row{display:flex;gap:0.5rem;align-items:center}
+.muted{color:#98a1b3}
+
+.small-btn{padding:0.35rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--foreground);cursor:pointer}
+
+.toast-inline{margin-top:0.75rem;padding:0.5rem;border-radius:6px;background:rgba(255,255,255,0.03);color:var(--foreground)}

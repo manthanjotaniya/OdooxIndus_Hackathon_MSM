@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Sign Up - CoreInventory</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="auth-container">
+  <h1>Sign Up</h1>
+  <form id="signupForm">
+    <label>Full name</label>
+    <input type="text" id="signupName" required>
+    <label>Email</label>
+    <input type="email" id="signupEmail" required>
+    <label>Password</label>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <input type="password" id="signupPassword" required style="flex:1">
+      <button type="button" id="signupShow1" class="show-toggle">Show</button>
+    </div>
+    <label>Confirm password</label>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <input type="password" id="signupPassword2" required style="flex:1">
+      <button type="button" id="signupShow2" class="show-toggle">Show</button>
+    </div>
+    <div class="helper" id="pwStrength">Password strength: <span class="muted">—</span></div>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Create account</button>
+      <a class="btn btn-outline" href="login.html">Sign in</a>
+    </div>
+  </form>
+  <div id="signupMessage" class="mono"></div>
+</div>
+
+<script src="auth.js"></script>
+document.getElementById('signupForm').addEventListener('submit', signupHandler);
+<script>
+document.getElementById('signupForm').addEventListener('submit', signupHandler);
+document.getElementById('signupShow1').addEventListener('click', ()=>{
+  const p = document.getElementById('signupPassword');
+  const b = document.getElementById('signupShow1');
+  if (p.type==='password'){ p.type='text'; b.textContent='Hide' } else { p.type='password'; b.textContent='Show' }
+});
+document.getElementById('signupShow2').addEventListener('click', ()=>{
+  const p = document.getElementById('signupPassword2');
+  const b = document.getElementById('signupShow2');
+  if (p.type==='password'){ p.type='text'; b.textContent='Hide' } else { p.type='password'; b.textContent='Show' }
+});
+
+// basic password strength
+document.getElementById('signupPassword').addEventListener('input', (e)=>{
+  const v = e.target.value;
+  const el = document.querySelector('#pwStrength .muted');
+  const score = (v.length>7) + (/[A-Z]/.test(v)) + (/[0-9]/.test(v)) + (/[^A-Za-z0-9]/.test(v));
+  const text = ['Very weak','Weak','Fair','Good','Strong'][Math.max(0,score)];
+  el.textContent = text;
+});
+</script>
+</body>
+</html>

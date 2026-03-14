@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreInventory - Preview</title>
+    <style>
+        /* Import Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@300;400;500&display=swap');
+
+        /* CSS Variables - Dark Industrial Theme */
+        :root {
+            --background: 222 47% 8%;
+            --foreground: 210 40% 95%;
+            --card: 222 47% 11%;
+            --card-foreground: 210 40% 95%;
+            --primary: 215 100% 55%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 222 47% 15%;
+            --secondary-foreground: 210 40% 95%;
+            --muted: 222 47% 15%;
+            --muted-foreground: 215 20% 55%;
+            --accent: 142 70% 45%;
+            --accent-foreground: 0 0% 100%;
+            --destructive: 0 84% 60%;
+            --destructive-foreground: 0 0% 100%;
+            --warning: 38 92% 50%;
+            --border: 222 47% 20%;
+            --input: 222 47% 15%;
+            --ring: 215 100% 55%;
+            --radius: 0.5rem;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .mono {
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Layout */
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 240px;
+            background-color: hsl(var(--card));
+            border-right: 1px solid hsl(var(--border));
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: 64px;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: hsl(var(--muted-foreground));
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--foreground));
+        }
+
+        .nav-item.active {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--primary));
+            border-left-color: hsl(var(--primary));
+        }
+
+        .nav-item .icon {
+            font-size: 1.25rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background-color: hsl(var(--border));
+            margin: 1rem 0;
+        }
+
+        .user-section {
+            padding: 1rem;
+            border-top: 1px solid hsl(var(--border));
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, hsl(var(--primary)), #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .sidebar.collapsed .user-info {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 64px;
+        }
+
+        /* Topbar */
+        .topbar {
+            height: 64px;
+            background-color: hsl(var(--card));
+            border-bottom: 1px solid hsl(var(--border));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: hsl(var(--foreground));
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb-separator {
+            color: hsl(var(--border));
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            background-color: hsl(var(--secondary));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+            width: 300px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: hsl(var(--ring));
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: hsl(var(--muted-foreground));
+        }
+
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: hsl(var(--destructive));
+            color: white;
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 9999px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius);
+        }
+
+        .user-dropdown:hover {
+            background-color: hsl(var(--secondary));
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: hsl(var(--primary) / 0.9);
+        }
+
+        .btn-secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--foreground));
+        }
+
+        .btn-secondary:hover {
+            background-color: hsl(var(--secondary) / 0.8);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground));
+        }
+
+        .btn-outline:hover {
+            background-color: hsl(var(--secondary));
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: hsl(var(--primary));
+        }
+
+        .kpi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .kpi-icon.blue {
+            background-color: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+        }
+
+        .kpi-icon.amber {
+            background-color: hsl(var(--warning) / 0.1);
+            color: hsl(var(--warning));
+        }
+
+        .kpi-icon.red {
+            background-color: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+        }
+
+        .kpi-icon.teal {
+            background-color: hsl(170 70% 45% / 0.1);
+            color: hsl(170 70% 45%);
+        }
+
+        .kpi-icon.purple {
+            background-color: hsl(270 70% 45% / 0.1);
+            color: hsl(270 70% 45%);
+        }
+
+        .kpi-value {
+            font-family: 'DM Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-label {
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+        }
+
+        .kpi-trend {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .trend-up {
+            color: hsl(var(--accent));
+        }
+
+        .trend-down {
+            color: hsl(var(--destructive));
+        }
+
+        /* Tables */
+        .table-container {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: hsl(var(--secondary) / 0.5);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .status-done {
+            background-color: hsl(var(--accent) / 0.1);
+            color: hsl(var(--accent));
+        }
+
+        .status-ready {
+            background-color: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+        }
+
+        .status-draft {
+            background-color: hsl(var(--muted) / 0.1);
+            color: hsl(var(--muted-foreground));
+        }
+
+        .status-waiting {
+            background-color: hsl(var(--warning) / 0.1);
+            color: hsl(var(--warning));
+        }
+
+        .status-cancelled {
+            background-color: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background-color: hsl(var(--secondary));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            color: hsl(var(--foreground));
+            min-width: 150px;
+        }
+
+        /* Alert Panel */
+        .alert-panel {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 320px;
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+
+        .alert-header {
+            padding: 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-item {
+            padding: 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-product {
+            font-weight: 500;
+        }
+
+        .alert-stock {
+            font-family: 'DM Mono', monospace;
+            color: hsl(var(--destructive));
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                hsl(var(--secondary)) 25%,
+                hsl(var(--border)) 50%,
+                hsl(var(--secondary)) 75%
+            );
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: var(--radius);
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Modal/Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid hsl(var(--border));
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 5rem;
+            right: 2rem;
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid hsl(var(--accent));
+        }
+
+        .toast.warning {
+            border-left: 4px solid hsl(var(--warning));
+        }
+
+        .toast.error {
+            border-left: 4px solid hsl(var(--destructive));
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 100;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .search-input {
+                width: 200px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sample Data Display */
+        .sample-data {
+            margin-top: 2rem;
+        }
+
+        .product-row.low-stock {
+            background-color: hsl(var(--warning) / 0.1);
+        }
+
+        .product-row.out-of-stock {
+            background-color: hsl(var(--destructive) / 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: hsl(var(--muted-foreground));
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .action-btn:hover {
+            color: hsl(var(--foreground));
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="icon">📊</span>
+                <span class="logo logo-text">COREINVENTORY</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <span class="icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item" style="color: hsl(var(--muted-foreground)); padding-left: 1rem;">
+                    <span class="nav-text" style="font-size: 0.75rem; text-transform: uppercase;">Products</span>
+                </div>
+                <a href="#" class="nav-item">
+                    <span class="icon">📦</span>
+                    <span class="nav-text">All Products</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item" style="color: hsl(var(--muted-foreground)); padding-left: 1rem;">
+                    <span class="nav-text" style="font-size: 0.75rem; text-transform: uppercase;">Operations</span>
+                </div>
+                <a href="#" class="nav-item">
+                    <span class="icon">📥</span>
+                    <span class="nav-text">Receipts</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon">📤</span>
+                    <span class="nav-text">Deliveries</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon">🔄</span>
+                    <span class="nav-text">Adjustments</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon">📋</span>
+                    <span class="nav-text">Move History</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="nav-item" style="color: hsl(var(--muted-foreground)); padding-left: 1rem;">
+                    <span class="nav-text" style="font-size: 0.75rem; text-transform: uppercase;">Settings</span>
+                </div>
+                <a href="#" class="nav-item">
+                    <span class="icon">🏭</span>
+                    <span class="nav-text">Warehouses</span>
+                </a>
+            </nav>
+
+            <div class="user-section">
+                <div class="avatar">JD</div>
+                <div class="user-info">
+                    <div style="font-weight: 500;">John Doe</div>
+                    <div style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">Warehouse Staff</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle">☰</button>
+                    <div class="breadcrumb">
+                        <span>Dashboard</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span style="color: hsl(var(--foreground));">Overview</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Search products, operations...">
+                    </div>
+                    
+                    <div class="notification-badge" id="notificationBell">
+                        <span style="font-size: 1.25rem;">🔔</span>
+                        <span class="badge">3</span>
+                    </div>
+
+                    <div class="user-dropdown">
+                        <div class="avatar" style="width: 32px; height: 32px;">JD</div>
+                        <span style="font-size: 0.875rem;">▼</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard Overview</h1>
+                    <button class="btn btn-primary">
+                        <span>+</span> New Operation
+                    </button>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon blue">📦</div>
+                            <div class="kpi-trend trend-up">↑ 12%</div>
+                        </div>
+                        <div class="kpi-value mono">2,547</div>
+                        <div class="kpi-label">Total Products</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon amber">⚠️</div>
+                            <div class="kpi-trend trend-up">↑ 5%</div>
+                        </div>
+                        <div class="kpi-value mono">23</div>
+                        <div class="kpi-label">Low Stock Items</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon red">❌</div>
+                            <div class="kpi-trend trend-down">↓ 2%</div>
+                        </div>
+                        <div class="kpi-value mono">8</div>
+                        <div class="kpi-label">Out of Stock</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon teal">📥</div>
+                        </div>
+                        <div class="kpi-value mono">12</div>
+                        <div class="kpi-label">Pending Receipts</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <div class="kpi-icon purple">📤</div>
+                        </div>
+                        <div class="kpi-value mono">5</div>
+                        <div class="kpi-label">Pending Deliveries</div>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <select class="filter-select">
+                        <option>All Types</option>
+                        <option>Receipts</option>
+                        <option>Deliveries</option>
+                        <option>Adjustments</option>
+                    </select>
+
+                    <select class="filter-select">
+                        <option>All Status</option>
+                        <option>Draft</option>
+                        <option>Ready</option>
+                        <option>Done</option>
+                    </select>
+
+                    <select class="filter-select">
+                        <option>All Warehouses</option>
+                        <option>Main Warehouse</option>
+                        <option>Production Facility</option>
+                    </select>
+
+                    <input type="date" class="filter-select" value="2024-03-14">
+                </div>
+
+                <!-- Recent Operations Table -->
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">Recent Operations</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Supplier/Customer</th>
+                                    <th>Items</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="mono">REC-0042</span></td>
+                                    <td><span style="font-size: 1.25rem;">📥</span> Receipt</td>
+                                    <td><span class="status-badge status-done">✅ Done</span></td>
+                                    <td>SteelCo Supplies</td>
+                                    <td>2 items</td>
+                                    <td>2024-03-14</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn">👁️</button>
+                                            <button class="action-btn">✎</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="mono">DEL-0037</span></td>
+                                    <td><span style="font-size: 1.25rem;">📤</span> Delivery</td>
+                                    <td><span class="status-badge status-ready">⏳ Ready</span></td>
+                                    <td>AutoParts Inc</td>
+                                    <td>3 items</td>
+                                    <td>2024-03-14</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn">👁️</button>
+                                            <button class="action-btn">✎</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="mono">INT-0012</span></td>
+                                    <td><span style="font-size: 1.25rem;">🔄</span> Transfer</td>
+                                    <td><span class="status-badge status-draft">📝 Draft</span></td>
+                                    <td>Internal</td>
+                                    <td>2 items</td>
+                                    <td>2024-03-13</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn">👁️</button>
+                                            <button class="action-btn">✎</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="mono">ADJ-0008</span></td>
+                                    <td><span style="font-size: 1.25rem;">⚖️</span> Adjustment</td>
+                                    <td><span class="status-badge status-done">✅ Done</span></td>
+                                    <td>Cycle Count</td>
+                                    <td>1 item</td>
+                                    <td>2024-03-13</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn">👁️</button>
+                                            <button class="action-btn">✎</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="font-size: 1.25rem;">Products Overview</h2>
+                        <button class="btn btn-outline">View All Products</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Unit</th>
+                                    <th>Total Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="mono">RM-STL-001</span></td>
+                                    <td>Steel Sheet 2mm</td>
+                                    <td>Raw Materials</td>
+                                    <td>kg</td>
+                                    <td class="mono">2,550</td>
+                                    <td><span class="status-badge status-done">✅ Active</span></td>
+                                    <td><button class="action-btn">✎</button></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="mono">RM-ALM-002</span></td>
+                                    <td>Aluminum Profile</td>
+                                    <td>Raw Materials</td>
+                                    <td>pcs</td>
+                                    <td class="mono">550</td>
+                                    <td><span class="status-badge status-done">✅ Active</span></td>
+                                    <td><button class="action-btn">✎</button></td>
+                                </tr>
+                                <tr class="product-row low-stock">
+                                    <td><span class="mono">FG-MEK-001</span></td>
+                                    <td>Mechanical Assembly Kit</td>
+                                    <td>Finished Goods</td>
+                                    <td>pcs</td>
+                                    <td class="mono">45</td>
+                                    <td><span class="status-badge status-waiting">⚠️ Low Stock</span></td>
+                                    <td><button class="action-btn">✎</button></td>
+                                </tr>
+                                <tr class="product-row out-of-stock">
+                                    <td><span class="mono">SP-BRG-002</span></td>
+                                    <td>6202 Ball Bearing</td>
+                                    <td>Spare Parts</td>
+                                    <td>pcs</td>
+                                    <td class="mono">0</td>
+                                    <td><span class="status-badge status-cancelled">❌ Out of Stock</span></td>
+                                    <td><button class="action-btn">✎</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Alert Panel (Low Stock) -->
+        <div class="alert-panel" id="alertPanel">
+            <div class="alert-header">
+                <div class="alert-title">
+                    <span style="color: hsl(var(--warning));">⚠️</span>
+                    <span>Low Stock Alert (3 items)</span>
+                </div>
+                <button class="action-btn" id="closeAlert">✕</button>
+            </div>
+            <div class="alert-item">
+                <div>
+                    <div class="alert-product">Steel Sheet 2mm</div>
+                    <div class="mono" style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">RM-STL-001</div>
+                </div>
+                <div class="alert-stock">450/500kg</div>
+            </div>
+            <div class="alert-item">
+                <div>
+                    <div class="alert-product">M8x25 Hex Bolt</div>
+                    <div class="mono" style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">SP-M8B-001</div>
+                </div>
+                <div class="alert-stock">800/1000pcs</div>
+            </div>
+            <div class="alert-item">
+                <div>
+                    <div class="alert-product">Cardboard Box 400x300</div>
+                    <div class="mono" style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">PK-CB-001</div>
+                </div>
+                <div class="alert-stock">350/500pcs</div>
+            </div>
+        </div>
+
+        <!-- Toast Notification (shown on action) -->
+        <div class="toast success" id="toast" style="display: none;">
+            <span style="color: hsl(var(--accent));">✅</span>
+            <div>
+                <div style="font-weight: 500;">Success</div>
+                <div style="font-size: 0.875rem;">Operation completed successfully</div>
+            </div>
+        </div>
+
+        <!-- Modal Dialog (hidden by default) -->
+        <div class="modal-overlay" id="modalOverlay" style="display: none;">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 style="font-size: 1.25rem;">Confirm Validation</h3>
+                </div>
+                <div class="modal-body">
+                    <p>This will permanently update inventory levels.</p>
+                    <div style="margin-top: 1rem; background-color: hsl(var(--secondary)); padding: 1rem; border-radius: var(--radius);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Items to validate:</span>
+                            <span class="mono">2</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total quantity:</span>
+                            <span class="mono">700 kg</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelModal">Cancel</button>
+                    <button class="btn btn-primary" id="confirmModal">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const menuToggle = document.getElementById('menuToggle');
+        let isSidebarCollapsed = false;
+
+        menuToggle.addEventListener('click', () => {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            if (isSidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+            }
+        });
+
+        // Mobile menu toggle
+        function checkMobile() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+            }
+        }
+        window.addEventListener('resize', checkMobile);
+        checkMobile();
+
+        // Notification bell click
+        const notificationBell = document.getElementById('notificationBell');
+        const alertPanel = document.getElementById('alertPanel');
+
+        notificationBell.addEventListener('click', () => {
+            alertPanel.style.display = alertPanel.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Close alert panel
+        document.getElementById('closeAlert').addEventListener('click', () => {
+            alertPanel.style.display = 'none';
+        });
+
+        // Show toast on button clicks
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'flex';
+            toast.className = `toast ${type}`;
+            
+            // Update message
+            const title = toast.querySelector('div div:first-child');
+            const desc = toast.querySelector('div div:last-child');
+            
+            if (type === 'success') {
+                title.textContent = 'Success';
+                desc.textContent = message || 'Operation completed successfully';
+                toast.querySelector('span:first-child').innerHTML = '✅';
+            } else if (type === 'warning') {
+                title.textContent = 'Warning';
+                desc.textContent = message || 'Please check the details';
+                toast.querySelector('span:first-child').innerHTML = '⚠️';
+            } else {
+                title.textContent = 'Error';
+                desc.textContent = message || 'Something went wrong';
+                toast.querySelector('span:first-child').innerHTML = '❌';
+            }
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Show modal
+        function showModal() {
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        // Hide modal
+        document.getElementById('cancelModal').addEventListener('click', () => {
+            document.getElementById('modalOverlay').style.display = 'none';
+        });
+
+        document.getElementById('confirmModal').addEventListener('click', () => {
+            document.getElementById('modalOverlay').style.display = 'none';
+            showToast('Operation validated successfully!');
+        });
+
+        // Add click handlers to action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (btn.textContent.includes('✎')) {
+                    showToast('Edit mode activated', 'warning');
+                } else if (btn.textContent.includes('👁️')) {
+                    showModal();
+                }
+            });
+        });
+
+        // New operation button
+        document.querySelector('.btn-primary').addEventListener('click', () => {
+            showToast('Creating new operation...', 'warning');
+        });
+
+        // Search input
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', (e) => {
+            if (e.target.value.length > 0) {
+                console.log('Searching:', e.target.value);
+            }
+        });
+
+        // Filter selects
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                showToast(`Filtered by: ${e.target.value}`, 'success');
+            });
+        });
+
+        // Table row click
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                const reference = row.querySelector('.mono')?.textContent;
+                if (reference) {
+                    showToast(`Viewing details for ${reference}`, 'success');
+                }
+            });
+        });
+
+        // Simulate real-time updates
+        let kpiValues = document.querySelectorAll('.kpi-value');
+        setInterval(() => {
+            // Randomly update a KPI to simulate real-time data
+            const randomIndex = Math.floor(Math.random() * kpiValues.length);
+            const currentValue = parseInt(kpiValues[randomIndex].textContent.replace(/,/g, ''));
+            const newValue = currentValue + Math.floor(Math.random() * 10) - 5;
+            kpiValues[randomIndex].textContent = newValue.toLocaleString();
+            
+            // Show subtle animation
+            kpiValues[randomIndex].style.transition = 'all 0.3s';
+            kpiValues[randomIndex].style.color = 'hsl(var(--primary))';
+            setTimeout(() => {
+                kpiValues[randomIndex].style.color = '';
+            }, 300);
+        }, 10000);
+
+        // Simulate low stock alert update
+        setInterval(() => {
+            const alertItems = document.querySelectorAll('.alert-item');
+            if (alertItems.length > 0) {
+                const randomItem = Math.floor(Math.random() * alertItems.length);
+                const stockSpan = alertItems[randomItem].querySelector('.alert-stock');
+                if (stockSpan) {
+                    const currentStock = parseInt(stockSpan.textContent.split('/')[0]);
+                    const newStock = currentStock - 5;
+                    if (newStock >= 0) {
+                        stockSpan.textContent = `${newStock}/${stockSpan.textContent.split('/')[1]}`;
+                    }
+                }
+            }
+        }, 15000);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K for search focus
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                document.getElementById('modalOverlay').style.display = 'none';
+                alertPanel.style.display = 'none';
+            }
+            
+            // ? for help
+            if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                showToast('Keyboard shortcuts: Ctrl+K (search), Esc (close)', 'warning');
+            }
+        });
+
+        // Initialize
+        console.log('CoreInventory Preview Loaded!');
+        console.log('Try: clicking buttons, searching, or using keyboard shortcuts (Ctrl+K for search)');
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Verify OTP - CoreInventory</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="auth-container">
+  <h1>Verify OTP</h1>
+  <p class="mono" id="otpHint">An OTP was sent to your email (dev preview)</p>
+  <div class="otp-row" style="margin-top:0.5rem;margin-bottom:0.5rem;">
+    <div id="devOtp" class="mono" style="font-size:0.95rem;color:var(--accent);"></div>
+    <button type="button" id="copyOtp" class="small-btn">Copy</button>
+    <button type="button" id="resendOtp" class="small-btn">Resend</button>
+    <div id="resendCountdown" class="muted" style="margin-left:auto"> </div>
+  </div>
+  <form id="otpForm">
+    <label>Enter code</label>
+    <input type="text" id="otpInput" required>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Verify</button>
+    </div>
+  </form>
+  <div id="otpMessage" class="mono"></div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+(function initOtpPage(){
+  const devOtp = document.getElementById('devOtp');
+  const otp = sessionStorage.getItem('ci_otp');
+  if (otp) devOtp.textContent = 'DEV OTP: ' + otp; 
+})();
+
+document.getElementById('otpForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const code = document.getElementById('otpInput').value.trim();
+  if (verifyOTP(code)) {
+    window.location.href = 'coreinventory-preview.html';
+  }
+});
+
+document.getElementById('copyOtp').addEventListener('click', ()=>{
+  const otp = sessionStorage.getItem('ci_otp')||'';
+  if (!otp) return;
+  navigator.clipboard?.writeText(otp).then(()=>{
+    const el = document.getElementById('otpMessage'); el.textContent='OTP copied to clipboard';
+  });
+});
+
+// Resend with countdown
+let resendTimer = null;
+function startResendCountdown(sec){
+  const el = document.getElementById('resendCountdown');
+  let remaining = sec;
+  el.textContent = `(${remaining}s)`;
+  document.getElementById('resendOtp').disabled = true;
+  resendTimer = setInterval(()=>{
+    remaining--; el.textContent = `(${remaining}s)`;
+    if (remaining<=0){ clearInterval(resendTimer); el.textContent=''; document.getElementById('resendOtp').disabled=false; }
+  },1000);
+}
+
+document.getElementById('resendOtp').addEventListener('click', ()=>{
+  // trigger resend via auth.js
+  const ok = resendOTP();
+  if (ok) startResendCountdown(30);
+});
+
+// init countdown disabled state
+startResendCountdown(0);
+</script>
+</body>
+</html>
